@@ -44,7 +44,6 @@ C_Red="${ESC}[38;5;203m"
 C_Cyan="${ESC}[38;5;117m"
 C_Gray="${ESC}[38;5;245m"
 C_White="${ESC}[38;5;255m"
-C_BgDark="${ESC}[48;5;236m"
 
 repeat_char() {
     local char="$1"
@@ -56,100 +55,53 @@ repeat_char() {
     printf "%*s" "$count" "" | tr ' ' "$char"
 }
 
-strip_ansi() {
-    printf "%s" "$1" | sed -E $'s/\x1B\[[0-9;]*m//g'
-}
-
-draw_box() {
-    local title="$1"
-    local width="$2"
-    local color="$3"
-    shift 3
-    local content=("$@")
-
-    local top="${color}╔$(repeat_char "═" $((width - 2)))╗${C_Reset}"
-    local title_pad=$((width - 4 - ${#title}))
-    if (( title_pad < 0 )); then
-        title_pad=0
-    fi
-    local title_line="${color}║${C_Reset} ${C_Bold}${title}${C_Reset}$(repeat_char " " "$title_pad")${color}║${C_Reset}"
-    local sep="${color}╠$(repeat_char "═" $((width - 2)))╣${C_Reset}"
-    local bottom="${color}╚$(repeat_char "═" $((width - 2)))╝${C_Reset}"
-
-    printf "%s\n" "$top"
-    printf "%s\n" "$title_line"
-    printf "%s\n" "$sep"
-
-    local line
-    for line in "${content[@]}"; do
-        local stripped
-        stripped=$(strip_ansi "$line")
-        local padding=$((width - 4 - ${#stripped}))
-        if (( padding < 0 )); then
-            padding=0
-        fi
-        printf "%s\n" "${color}║${C_Reset} ${line}$(repeat_char " " "$padding") ${color}║${C_Reset}"
-    done
-
-    printf "%s\n" "$bottom"
-}
-
 draw_progress_bar() {
     local percent="$1"
     local width="$2"
-    local color="$3"
-
     local filled=$(( (percent * width) / 100 ))
     local empty=$(( width - filled ))
 
-    local bar="${color}$(repeat_char "█" "$filled")${C_Gray}$(repeat_char "░" "$empty")${C_Reset}"
-    printf "[%s] %s%%" "$bar" "$percent"
+    local bar=""
+    if (( filled > 0 )); then
+        bar="${C_Green}$(repeat_char "━" $((filled - 1)))╸${C_Reset}"
+    fi
+    local tail="${C_Gray}$(repeat_char "·" "$empty")${C_Reset}"
+    printf "%s%s %s%%" "$bar" "$tail" "$percent"
 }
 
-draw_team_status() {
-    local alpha="$1"
-    local beta="$2"
-    local gamma="$3"
+status_dot() {
+    local status="$1"
+    local dot_color="$C_Gray"
 
-    local alpha_color="$C_Gray"
-    local beta_color="$C_Gray"
-    local gamma_color="$C_Gray"
+    if [[ "$status" =~ (In[[:space:]]Progress|Running|Working) ]]; then
+        dot_color="$C_Yellow"
+    elif [[ "$status" =~ (Complete|Done|Success) ]]; then
+        dot_color="$C_Green"
+    elif [[ "$status" =~ (Error|Failed) ]]; then
+        dot_color="$C_Red"
+    fi
 
-    if [[ "$alpha" == "WORKING" ]]; then alpha_color="$C_Yellow"; fi
-    if [[ "$alpha" == "DONE" ]]; then alpha_color="$C_Green"; fi
-    if [[ "$alpha" == "ERROR" ]]; then alpha_color="$C_Red"; fi
-
-    if [[ "$beta" == "WORKING" ]]; then beta_color="$C_Yellow"; fi
-    if [[ "$beta" == "DONE" ]]; then beta_color="$C_Green"; fi
-    if [[ "$beta" == "ERROR" ]]; then beta_color="$C_Red"; fi
-
-    if [[ "$gamma" == "WORKING" ]]; then gamma_color="$C_Yellow"; fi
-    if [[ "$gamma" == "DONE" ]]; then gamma_color="$C_Green"; fi
-    if [[ "$gamma" == "ERROR" ]]; then gamma_color="$C_Red"; fi
-
-    local lines=(
-        "${C_Purple}┌────────────┬────────────┬────────────┐${C_Reset}"
-        "${C_Purple}│${C_Reset}   ${C_Bold}ALPHA${C_Reset}    ${C_Purple}│${C_Reset}    ${C_Bold}BETA${C_Reset}    ${C_Purple}│${C_Reset}   ${C_Bold}GAMMA${C_Reset}    ${C_Purple}│${C_Reset}"
-        "${C_Purple}├────────────┼────────────┼────────────┤${C_Reset}"
-        "${C_Purple}│${C_Reset}  ${alpha_color}${alpha}${C_Reset}$(repeat_char " " $((8 - ${#alpha})))${C_Purple}│${C_Reset}  ${beta_color}${beta}${C_Reset}$(repeat_char " " $((8 - ${#beta})))${C_Purple}│${C_Reset}  ${gamma_color}${gamma}${C_Reset}$(repeat_char " " $((8 - ${#gamma})))${C_Purple}│${C_Reset}"
-        "${C_Purple}└────────────┴────────────┴────────────┘${C_Reset}"
-    )
-
-    local line
-    for line in "${lines[@]}"; do
-        printf "%s\n" "          ${line}"
-    done
+    printf "%s●%s" "$dot_color" "$C_Reset"
 }
 
-draw_mini_cauldron() {
-    printf "%s\n" "${C_Gray}     .  o  .${C_Reset}"
-    printf "%s\n" "${C_Gray}    o  .  o${C_Reset}"
-    printf "%s\n" "${C_Purple}  .d88888888b.${C_Reset}"
-    printf "%s\n" "${C_Purple} d888888888888b${C_Reset}"
-    printf "%s\n" "${C_Pink}888888888888888${C_Reset}"
-    printf "%s\n" "${C_Purple} Y8888888888P${C_Reset}"
-    printf "%s\n" "${C_Gray}  `Y888888P'${C_Reset}"
-    printf "%s\n" "${C_Dim}   _/    \_${C_Reset}"
+team_dot() {
+    local status="$1"
+    local dot_color="$C_Gray"
+
+    if [[ "$status" == "WORKING" ]]; then dot_color="$C_Yellow"; fi
+    if [[ "$status" == "DONE" ]]; then dot_color="$C_Green"; fi
+    if [[ "$status" == "ERROR" ]]; then dot_color="$C_Red"; fi
+
+    printf "%s●%s" "$dot_color" "$C_Reset"
+}
+
+get_plan_name() {
+    local plan_name="Current Plan"
+    if [[ -n "$PlanFile" && -f "$PlanFile" ]]; then
+        plan_name=$(basename "$PlanFile")
+        plan_name="${plan_name%.md}"
+    fi
+    printf "%s" "$plan_name"
 }
 
 get_state_info() {
@@ -191,37 +143,31 @@ show_dashboard() {
     clear
 
     printf "\n"
-    printf "%s\n" "  ${C_Purple}${C_Bold}╔══════════════════════════════════════════════════════════════╗${C_Reset}"
-    printf "%s\n" "  ${C_Purple}${C_Bold}║${C_Reset}              ${C_Pink}${C_Bold}C L A U D R O N${C_Reset}   ${C_Gray}Dashboard${C_Reset}              ${C_Purple}${C_Bold}║${C_Reset}"
-    printf "%s\n" "  ${C_Purple}${C_Bold}╚══════════════════════════════════════════════════════════════╝${C_Reset}"
+    printf "%s\n" "  ${C_Purple}${C_Bold}CLAUDRON${C_Reset} ${C_Dim}Dashboard${C_Reset}"
     printf "\n"
 
     local state_info
     if state_info=$(get_state_info); then
         IFS='|' read -r phase_current phase_total status last_activity progress <<< "$state_info"
 
-        local status_content=(
-            "${C_Gray}Phase:${C_Reset}    ${C_Bold}${phase_current}${C_Reset} of ${phase_total}"
-            "${C_Gray}Status:${C_Reset}   ${C_Green}${status}${C_Reset}"
-            "${C_Gray}Activity:${C_Reset} ${last_activity}"
-            ""
-            "$(draw_progress_bar "$progress" 45 "$C_Green")"
-        )
+        local plan_name
+        plan_name=$(get_plan_name)
 
-        draw_box "PROJECT STATUS" 58 "$C_Purple" "${status_content[@]}"
+        printf "%s\n" "  ${C_Bold}${C_Pink}PHASE ${phase_current}/${phase_total}${C_Reset} ${C_Dim}•${C_Reset} ${C_Bold}PLAN:${C_Reset} ${C_White}${plan_name}${C_Reset}"
+        printf "\n"
+        printf "%s\n" "  ${C_Bold}Status:${C_Reset} $(status_dot "$status") ${C_White}${status}${C_Reset}"
+        printf "%s\n" "  ${C_Bold}Activity:${C_Reset} ${C_Gray}${last_activity}${C_Reset}"
+        printf "%s\n" "  ${C_Bold}Progress:${C_Reset} $(draw_progress_bar "$progress" 36)"
         printf "\n"
 
-        printf "%s\n" "  ${C_Bold}TEAM LEADS${C_Reset}"
-        draw_team_status "IDLE" "IDLE" "IDLE"
+        printf "%s\n" "  ${C_Bold}Team Leads:${C_Reset} Alpha $(team_dot "IDLE")   Beta $(team_dot "IDLE")   Gamma $(team_dot "IDLE")"
         printf "\n"
 
-        local cmd_content=(
-            "${C_Cyan}/ace:progress${C_Reset}      Refresh status"
-            "${C_Cyan}/ace:execute-plan${C_Reset}  Start execution"
-            "${C_Cyan}/ace:show-plan${C_Reset}     View current plan"
-            "${C_Cyan}/ace:help${C_Reset}          All commands"
-        )
-        draw_box "QUICK COMMANDS" 58 "$C_Gray" "${cmd_content[@]}"
+        printf "%s\n" "  ${C_Bold}Quick Commands${C_Reset}"
+        printf "%s\n" "  → ${C_Cyan}/ace:progress${C_Reset} ${C_Gray}Refresh status${C_Reset}"
+        printf "%s\n" "  → ${C_Cyan}/ace:execute-plan${C_Reset} ${C_Gray}Start execution${C_Reset}"
+        printf "%s\n" "  → ${C_Cyan}/ace:show-plan${C_Reset} ${C_Gray}View current plan${C_Reset}"
+        printf "%s\n" "  → ${C_Cyan}/ace:help${C_Reset} ${C_Gray}All commands${C_Reset}"
     else
         printf "%s\n" "  ${C_Yellow}No project state found.${C_Reset}"
         printf "%s\n" "  ${C_Gray}Run ${C_Cyan}/ace:new-project${C_Gray} to start.${C_Reset}"
