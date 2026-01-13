@@ -32,6 +32,9 @@ Configuration file: @.ace/config.json
 - projectType.current (frontend | backend | fullstack | automation | agentic | library | monorepo | custom)
 - orchestration.maxTeamLeads (1-5)
 - orchestration.maxTasksPerPlan (1-10)
+- orchestration.expertises.ALPHA (string)
+- orchestration.expertises.BETA (string)
+- orchestration.expertises.GAMMA (string)
 </context>
 
 <process>
@@ -60,6 +63,10 @@ Orchestration:
   Mode:           [parallel]
   Max Team Leads: [3]
   Max Tasks/Plan: [3]
+  Expertise:
+    ALPHA: [Expertise from orchestration.expertises.ALPHA]
+    BETA:  [Expertise from orchestration.expertises.BETA]
+    GAMMA: [Expertise from orchestration.expertises.GAMMA]
 
 Workflow:
   Mode: [interactive]  (interactive | yolo)
@@ -106,7 +113,10 @@ validPaths = [
     "git.perTaskCommits",
     "projectType.current",
     "orchestration.maxTeamLeads",
-    "orchestration.maxTasksPerPlan"
+    "orchestration.maxTasksPerPlan",
+    "orchestration.expertises.ALPHA",
+    "orchestration.expertises.BETA",
+    "orchestration.expertises.GAMMA"
 ]
 
 if setting.path not in validPaths:
@@ -125,6 +135,7 @@ Validation rules:
 - projectType.current: must be in supported list
 - orchestration.maxTeamLeads: integer 1-5
 - orchestration.maxTasksPerPlan: integer 1-10
+- orchestration.expertises.*: any non-empty string
 
 if validation fails:
     Display error with allowed values
