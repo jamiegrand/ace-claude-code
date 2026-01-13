@@ -10,7 +10,12 @@
     "workerTimeout": 300000,
     "retryAttempts": 2,
     "showPlanBeforeExecute": true,
-    "autoDetectProjectType": true
+    "autoDetectProjectType": true,
+    "expertises": {
+      "ALPHA": "Architectural specialist focused on scalability and data integrity.",
+      "BETA": "Component architecture expert specializing in reusable UI logic.",
+      "GAMMA": "Senior SEO Strategist specializing in technical SEO, semantic HTML, and Core Web Vitals."
+    }
   },
 
   "contextManagement": {
