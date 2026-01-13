@@ -88,7 +88,7 @@ pad_text() {
 
 show_header() {
     printf "\n"
-    printf "%s\n" "  ${C_Bold}${C_Pink}ACE EXECUTE${C_Reset}"
+    printf "%s\n" "  ${C_Bold}${C_Purple}ACE EXECUTION${C_Reset}"
     printf "%s\n" "  ${C_Dim}Phase ${Phase} • Plan ${PlanName}${C_Reset}"
     printf "\n"
 }
@@ -113,19 +113,16 @@ show_execution_grid() {
     local gamma_status="$3"
     local frame="$4"
 
-    printf "%s\n" "  ${C_Bold}Task Distribution${C_Reset}"
-    printf "\n"
-
     local col_width=20
-    local alpha_label="${C_Bold}ALPHA${C_Reset}"
-    local beta_label="${C_Bold}BETA${C_Reset}"
-    local gamma_label="${C_Bold}GAMMA${C_Reset}"
+    local alpha_label="${C_Bold}${C_Pink}ALPHA${C_Reset}"
+    local beta_label="${C_Bold}${C_Cyan}BETA${C_Reset}"
+    local gamma_label="${C_Bold}${C_Green}GAMMA${C_Reset}"
 
     printf "  %s  %s  %s\n" "$(pad_text "$alpha_label" "$col_width")" "$(pad_text "$beta_label" "$col_width")" "$(pad_text "$gamma_label" "$col_width")"
 
-    local alpha_status_line="$(status_icon "$alpha_status" "$frame") ${C_Dim}${alpha_status}${C_Reset}"
-    local beta_status_line="$(status_icon "$beta_status" "$frame") ${C_Dim}${beta_status}${C_Reset}"
-    local gamma_status_line="$(status_icon "$gamma_status" "$frame") ${C_Dim}${gamma_status}${C_Reset}"
+    local alpha_status_line="$(status_icon "$alpha_status" "$frame") ${C_Gray}${alpha_status^}${C_Reset}"
+    local beta_status_line="$(status_icon "$beta_status" "$frame") ${C_Gray}${beta_status^}${C_Reset}"
+    local gamma_status_line="$(status_icon "$gamma_status" "$frame") ${C_Gray}${gamma_status^}${C_Reset}"
 
     printf "  %s  %s  %s\n" "$(pad_text "$alpha_status_line" "$col_width")" "$(pad_text "$beta_status_line" "$col_width")" "$(pad_text "$gamma_status_line" "$col_width")"
 
@@ -142,9 +139,9 @@ show_execution_grid() {
         gt="${gt:0:15}..."
     fi
 
-    local at_line="${C_Gray}${at}${C_Reset}"
-    local bt_line="${C_Gray}${bt}${C_Reset}"
-    local gt_line="${C_Gray}${gt}${C_Reset}"
+    local at_line="${C_Dim}${at}${C_Reset}"
+    local bt_line="${C_Dim}${bt}${C_Reset}"
+    local gt_line="${C_Dim}${gt}${C_Reset}"
 
     printf "  %s  %s  %s\n" "$(pad_text "$at_line" "$col_width")" "$(pad_text "$bt_line" "$col_width")" "$(pad_text "$gt_line" "$col_width")"
 }

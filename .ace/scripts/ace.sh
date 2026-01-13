@@ -31,10 +31,10 @@ case "$command" in
         printf "  ${Dim}Minimal CLI tools for your Ace workflow${Reset}\n"
         printf "\n"
         printf "  ${Bold}Commands${Reset}\n"
-        printf "  ${Bold}ace splash${Reset}     Show animated splash screen\n"
-        printf "  ${Bold}ace dashboard${Reset}  Show project dashboard\n"
-        printf "  ${Bold}ace progress${Reset}   Live progress monitoring\n"
-        printf "  ${Bold}ace help${Reset}       Show this help\n"
+        printf "    ${Bold}ace splash${Reset}     Show animated splash screen\n"
+        printf "    ${Bold}ace dashboard${Reset}  Show project dashboard\n"
+        printf "    ${Bold}ace progress${Reset}   Live progress monitoring\n"
+        printf "    ${Bold}ace help${Reset}       Show this help\n"
         printf "\n"
         ;;
 esac
