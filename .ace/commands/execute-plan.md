@@ -89,6 +89,22 @@ if PLAN.md not found:
 
 if SUMMARY.md already exists for this plan:
     Ask: "Plan already executed. Re-run?"
+
+Record execution start timestamp:
+    execution_start = now()
+
+Record pre-execution git state:
+    pre_execution_commit = git rev-parse --short HEAD
+    Append to STATE.md Session Continuity:
+      "Pre-execution commit: [pre_execution_commit]"
+
+Run zone validation (same logic as /ace:validate-zones):
+    - Load project-types.json and current project type from config.json
+    - Check for overlapping "owns" patterns across zones
+    - If overlap detected:
+        Error: "Zone conflict detected - overlapping ownership patterns"
+        Display conflicting patterns and zones
+        Stop execution (in both interactive and YOLO modes)
 ```
 
 ## 2. Parse Plan
@@ -315,6 +331,12 @@ Aggregate:
 - All deviations
 - All issues logged
 
+Calculate execution duration:
+    execution_end = now()
+    duration = execution_end - execution_start
+    duration_minutes = round(duration in minutes, 2)
+    tasks_completed = count of tasks with Status COMPLETE
+
 ## 8. Run Quality Gates
 
 For each enabled gate in config.json:
@@ -326,20 +348,20 @@ Before running each gate, verify command exists:
 ```
 TypeScript Check:
   Run: npx tsc --version
-  Available if: exit code 0
+  Available if: exit code 0 AND `command -v npx` succeeds
 
 Build Check:
   Read package.json scripts
-  Available if: "build" script exists
+  Available if: "build" script exists AND `command -v npm` succeeds
   Alt: npm run build --dry-run (if supported)
 
 Lint Check:
   Read package.json scripts
-  Available if: "lint" script exists
+  Available if: "lint" script exists AND `command -v npm` succeeds
 
 Test Check:
   Read package.json scripts
-  Available if: "test" script exists
+  Available if: "test" script exists AND `command -v npm` succeeds
 ```
 
 ### 8.2 Run Available Gates
@@ -365,7 +387,7 @@ if gate command exists:
         Re-run checks
 else:
     Display: "Skipping [gate] - command not available"
-    Log status as SKIP (unavailable)
+    Log status as SKIP (not installed) in SUMMARY.md
     Continue to next gate
 ```
 
@@ -408,6 +430,11 @@ Update:
 - Current position
 - Performance metrics (add duration)
 - Session info
+
+Append to **Performance Metrics**:
+- Last plan duration: [duration_minutes] minutes
+- Tasks completed (this plan): [tasks_completed]/[total_tasks]
+- Total execution time: [previous total + duration_minutes]
 
 ## 11. Metadata Commit
 

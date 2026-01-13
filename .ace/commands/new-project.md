@@ -39,7 +39,7 @@ if git.enabled AND git.autoInit:
     Check if .git directory exists
     if not exists:
         Run: git init
-        Run: git add .ace/ CLAUDE.md .gitignore
+        Run: git add .ace/ CLAUDE.md
         Run: git commit -m "chore: initialize ace orchestration system"
         Display: "Git repository initialized"
 ```
