@@ -238,6 +238,11 @@ Available scripts:
 | "Show the plan" / "What's the current plan?" | `/ace:show-plan` |
 | "List phases" / "Show all phases" | `/ace:list-phases` |
 
+#### Smart Continuation
+| User Says | Routes To |
+|-----------|-----------|
+| "next" / "continue" / "go" / "yes" / "ok" | `/ace:next` |
+
 #### Session Management
 | User Says | Routes To |
 |-----------|-----------|
