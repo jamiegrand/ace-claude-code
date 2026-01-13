@@ -176,6 +176,10 @@ WHAT SUCCESS LOOKS LIKE:
 - [Acceptance criterion 2 from PLAN.md]
 - [Acceptance criterion 3 from PLAN.md]
 
+## YOUR EXPERTISE
+
+[Inject expertise from config.json orchestration.expertises block for this lead]
+
 ## YOUR ZONE (files you OWN)
 
 You have EXCLUSIVE ownership of:
@@ -190,8 +194,8 @@ Think step-by-step before coding:
 
 1. **UNDERSTAND**: Read any existing files in your zone first
 2. **PLAN**: Mentally outline the changes needed
-3. **IMPLEMENT**: Write clean, production-quality code
-4. **VERIFY**: Test your changes work (run relevant commands)
+3. **IMPLEMENT**: Prioritize your expertise while writing clean, production-quality code
+4. **VERIFY**: Validate outcomes with your expertise in mind (e.g., SEO leads verify heading hierarchies, meta tags, and Core Web Vitals)
 5. **COMMIT**: Stage only YOUR files and commit
 
 ## QUALITY STANDARDS
