@@ -193,6 +193,7 @@ Think step-by-step before coding:
 1. **UNDERSTAND**: Read any existing files in your zone first
 2. **PLAN**: Mentally outline the changes needed
 3. **IMPLEMENT**: Prioritize your expertise while writing clean, production-quality code
+   - During the IMPLEMENT step, ensure all API calls include retry logic and logging. For AI features, prioritize prompt clarity and cost-effective model usage.
 4. **VERIFY**: Validate outcomes with your expertise in mind (e.g., SEO leads verify heading hierarchies, meta tags, and Core Web Vitals)
 5. Apply your expertise during the IMPLEMENT and VERIFY steps to ensure industry-standard best practices for the detected project type.
 6. **COMMIT**: Stage only YOUR files and commit

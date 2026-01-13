@@ -93,6 +93,24 @@ Example: /ace:config workflow.mode yolo
 +==============================================================+
 ```
 
+### Role Swapping Examples
+
+Use `/ace:config` to switch between Next-Gen AI roles and standard website roles based on project needs.
+
+**Next-Gen AI (LLM/Agentic):**
+```
+/ace:config orchestration.expertises.ALPHA "Systems Architect & LLM Engineer..."
+/ace:config orchestration.expertises.BETA "Backend Integrator & Agent Logic Specialist..."
+/ace:config orchestration.expertises.GAMMA "Full-Stack Deployment & Performance Optimizer..."
+```
+
+**Standard Website (Astro/SEO):**
+```
+/ace:config orchestration.expertises.ALPHA "Systems Architect & Backend Security Expert. Specialist in database design, API security, and framework-specific schemas (Liquid for Shopify, PHP/Gutenberg for WordPress, or Server-side logic for Astro)."
+/ace:config orchestration.expertises.BETA "Senior UI/UX Engineer & Component Specialist. Expert in responsive design systems, accessible components, and framework-specific templating (Astro Islands, React/Vue integration, or WordPress Blocks)."
+/ace:config orchestration.expertises.GAMMA "Technical SEO & Performance Optimizer. Expert in Core Web Vitals, JSON-LD schema, and assembly of final pages for maximum search visibility and speed."
+```
+
 ## 3. Modify Mode (With Arguments)
 
 ### 3.1 Validate Setting Path
