@@ -156,11 +156,30 @@ Retrying BETA task...
 ### Option 2: ROLLBACK
 
 ```bash
-# Find first commit of this plan
-FIRST_COMMIT=$(git log --oneline | grep "{plan_id}" | tail -1 | cut -d' ' -f1)
+# Determine phase + plan_id from STATE.md or arguments
+PHASE="{phase}"
+PLAN_ID="{plan_id}"
 
-# Revert to before first commit
-git reset --hard ${FIRST_COMMIT}^
+# Read pre-execution state from STATE.md
+# (recorded at execution start by /ace:execute-plan)
+PRE_EXEC_COMMIT=$(rg -n "Pre-execution commit:" .ace/planning/STATE.md | tail -1 | awk '{print $3}')
+
+# Identify plan commits (prefer SUMMARY.md, fallback to git log)
+SUMMARY_PATH=".ace/planning/phases/${PHASE}/${PLAN_ID}-SUMMARY.md"
+# If SUMMARY.md exists, parse commit hashes from it
+PLAN_COMMITS=$(rg -n "Commit:" ${SUMMARY_PATH} | awk '{print $2}' | tr -d '`')
+# Fallback: grep git log by plan id if SUMMARY missing
+if [ -z "${PLAN_COMMITS}" ]; then
+  PLAN_COMMITS=$(git log --format="%h %s" --grep "{plan_id}" | awk '{print $1}')
+fi
+
+# Option A: Revert commits individually (newest first)
+for COMMIT in $(echo "${PLAN_COMMITS}" | tac); do
+  git revert --no-edit ${COMMIT}
+done
+
+# Option B (local-only): Reset to pre-execution commit if safe
+# git reset --hard ${PRE_EXEC_COMMIT}
 
 # Clean untracked files in src/
 git clean -fd src/
@@ -169,6 +188,7 @@ git clean -fd src/
 Update STATE.md:
 - Reset plan status to "pending"
 - Clear execution metrics
+- Confirm HEAD matches PRE_EXEC_COMMIT from STATE.md
 
 ```
 +==============================================================+
