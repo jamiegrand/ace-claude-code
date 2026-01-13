@@ -5,6 +5,7 @@ argument-hint: ""
 allowed-tools:
   - Read
   - Glob
+  - AskUserQuestion
 ---
 
 <objective>
@@ -126,6 +127,21 @@ if .continue-here*.md exists:
 | 3     | [Integration]  | [Not Started] | 0/2 |
 
 +==============================================================+
+```
+
+## 4. Interactive Continuation
+
+```
+After determining the recommended next action:
+
+AskUserQuestion:
+  Prompt: "Next recommended action is [Action]. Press Enter to proceed."
+
+If user input is empty or "y" (case-insensitive):
+  Display: "Auto-executing: [Action]..."
+  Run the detected next command immediately.
+Else:
+  Continue without executing.
 ```
 
 </process>
