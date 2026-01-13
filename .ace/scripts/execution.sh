@@ -58,6 +58,7 @@ C_White="${ESC}[38;5;255m"
 C_Blue="${ESC}[38;5;75m"
 
 Spinners=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+Rendered=false
 
 repeat_char() {
     local char="$1"
@@ -69,18 +70,41 @@ repeat_char() {
     printf "%*s" "$count" "" | tr ' ' "$char"
 }
 
+strip_ansi() {
+    printf "%s" "$1" | sed -E $'s/\x1B\[[0-9;]*m//g'
+}
+
+pad_text() {
+    local text="$1"
+    local width="$2"
+    local plain
+    plain=$(strip_ansi "$text")
+    local pad=$((width - ${#plain}))
+    if (( pad < 0 )); then
+        pad=0
+    fi
+    printf "%s%s" "$text" "$(repeat_char " " "$pad")"
+}
+
 show_header() {
     printf "\n"
-    printf "%s\n" "  ${C_Purple}╔══════════════════════════════════════════════════════════════╗${C_Reset}"
-    printf "%s\n" "  ${C_Purple}║${C_Reset}           ${C_Pink}${C_Bold}ACE EXECUTE${C_Reset}                                     ${C_Purple}║${C_Reset}"
-    printf "%s\n" "  ${C_Purple}╠══════════════════════════════════════════════════════════════╣${C_Reset}"
-    local plan_pad=$((35 - ${#PlanName}))
-    if (( plan_pad < 0 )); then
-        plan_pad=0
-    fi
-    printf "%s\n" "  ${C_Purple}║${C_Reset}  Phase: ${C_Bold}${Phase}${C_Reset}  │  Plan: ${C_Cyan}${PlanName}${C_Reset}$(repeat_char " " "$plan_pad")${C_Purple}║${C_Reset}"
-    printf "%s\n" "  ${C_Purple}╚══════════════════════════════════════════════════════════════╝${C_Reset}"
+    printf "%s\n" "  ${C_Bold}${C_Pink}ACE EXECUTE${C_Reset}"
+    printf "%s\n" "  ${C_Dim}Phase ${Phase} • Plan ${PlanName}${C_Reset}"
     printf "\n"
+}
+
+status_icon() {
+    local status="$1"
+    local frame="$2"
+    local spin_idx=$((frame % ${#Spinners[@]}))
+
+    if [[ "$status" == "WORKING" ]]; then
+        printf "%s%s%s" "$C_Yellow" "${Spinners[$spin_idx]}" "$C_Reset"
+    elif [[ "$status" == "DONE" ]]; then
+        printf "%s🟢%s" "$C_Green" "$C_Reset"
+    else
+        printf "%s⚪️%s" "$C_Gray" "$C_Reset"
+    fi
 }
 
 show_execution_grid() {
@@ -89,42 +113,21 @@ show_execution_grid() {
     local gamma_status="$3"
     local frame="$4"
 
-    local spin_idx=$((frame % ${#Spinners[@]}))
-
-    printf "%s\n" "  ${C_Bold}TASK DISTRIBUTION:${C_Reset}"
+    printf "%s\n" "  ${C_Bold}Task Distribution${C_Reset}"
     printf "\n"
 
-    printf "%s\n" "  ${C_Blue}┌──────────────────────┐${C_Reset}  ${C_Green}┌──────────────────────┐${C_Reset}  ${C_Pink}┌──────────────────────┐${C_Reset}"
+    local col_width=20
+    local alpha_label="${C_Bold}ALPHA${C_Reset}"
+    local beta_label="${C_Bold}BETA${C_Reset}"
+    local gamma_label="${C_Bold}GAMMA${C_Reset}"
 
-    local alpha_icon
-    if [[ "$alpha_status" == "WORKING" ]]; then
-        alpha_icon="${C_Yellow}${Spinners[$spin_idx]}${C_Reset}"
-    elif [[ "$alpha_status" == "DONE" ]]; then
-        alpha_icon="${C_Green}✓${C_Reset}"
-    else
-        alpha_icon="${C_Gray}○${C_Reset}"
-    fi
+    printf "  %s  %s  %s\n" "$(pad_text "$alpha_label" "$col_width")" "$(pad_text "$beta_label" "$col_width")" "$(pad_text "$gamma_label" "$col_width")"
 
-    local beta_icon
-    if [[ "$beta_status" == "WORKING" ]]; then
-        beta_icon="${C_Yellow}${Spinners[$spin_idx]}${C_Reset}"
-    elif [[ "$beta_status" == "DONE" ]]; then
-        beta_icon="${C_Green}✓${C_Reset}"
-    else
-        beta_icon="${C_Gray}○${C_Reset}"
-    fi
+    local alpha_status_line="$(status_icon "$alpha_status" "$frame") ${C_Dim}${alpha_status}${C_Reset}"
+    local beta_status_line="$(status_icon "$beta_status" "$frame") ${C_Dim}${beta_status}${C_Reset}"
+    local gamma_status_line="$(status_icon "$gamma_status" "$frame") ${C_Dim}${gamma_status}${C_Reset}"
 
-    local gamma_icon
-    if [[ "$gamma_status" == "WORKING" ]]; then
-        gamma_icon="${C_Yellow}${Spinners[$spin_idx]}${C_Reset}"
-    elif [[ "$gamma_status" == "DONE" ]]; then
-        gamma_icon="${C_Green}✓${C_Reset}"
-    else
-        gamma_icon="${C_Gray}○${C_Reset}"
-    fi
-
-    printf "%s\n" "  ${C_Blue}│${C_Reset} ${C_Bold}ALPHA${C_Reset}         ${alpha_icon}     ${C_Blue}│${C_Reset}  ${C_Green}│${C_Reset} ${C_Bold}BETA${C_Reset}          ${beta_icon}     ${C_Green}│${C_Reset}  ${C_Pink}│${C_Reset} ${C_Bold}GAMMA${C_Reset}         ${gamma_icon}     ${C_Pink}│${C_Reset}"
-    printf "%s\n" "  ${C_Blue}├──────────────────────┤${C_Reset}  ${C_Green}├──────────────────────┤${C_Reset}  ${C_Pink}├──────────────────────┤${C_Reset}"
+    printf "  %s  %s  %s\n" "$(pad_text "$alpha_status_line" "$col_width")" "$(pad_text "$beta_status_line" "$col_width")" "$(pad_text "$gamma_status_line" "$col_width")"
 
     local at="$AlphaTask"
     local bt="$BetaTask"
@@ -139,15 +142,11 @@ show_execution_grid() {
         gt="${gt:0:15}..."
     fi
 
-    local at_pad=$((20 - ${#at}))
-    local bt_pad=$((20 - ${#bt}))
-    local gt_pad=$((20 - ${#gt}))
-    if (( at_pad < 0 )); then at_pad=0; fi
-    if (( bt_pad < 0 )); then bt_pad=0; fi
-    if (( gt_pad < 0 )); then gt_pad=0; fi
+    local at_line="${C_Gray}${at}${C_Reset}"
+    local bt_line="${C_Gray}${bt}${C_Reset}"
+    local gt_line="${C_Gray}${gt}${C_Reset}"
 
-    printf "%s\n" "  ${C_Blue}│${C_Reset} ${C_Gray}${at}${C_Reset}$(repeat_char " " "$at_pad")${C_Blue}│${C_Reset}  ${C_Green}│${C_Reset} ${C_Gray}${bt}${C_Reset}$(repeat_char " " "$bt_pad")${C_Green}│${C_Reset}  ${C_Pink}│${C_Reset} ${C_Gray}${gt}${C_Reset}$(repeat_char " " "$gt_pad")${C_Pink}│${C_Reset}"
-    printf "%s\n" "  ${C_Blue}└──────────────────────┘${C_Reset}  ${C_Green}└──────────────────────┘${C_Reset}  ${C_Pink}└──────────────────────┘${C_Reset}"
+    printf "  %s  %s  %s\n" "$(pad_text "$at_line" "$col_width")" "$(pad_text "$bt_line" "$col_width")" "$(pad_text "$gt_line" "$col_width")"
 }
 
 show_progress_bar() {
@@ -158,13 +157,18 @@ show_progress_bar() {
     if (( total > 0 )); then
         percent=$(( (done * 100) / total ))
     fi
-    local width=50
+    local width=40
     local filled=$(( (percent * width) / 100 ))
     local empty=$(( width - filled ))
 
-    local bar="${C_Green}$(repeat_char "█" "$filled")${C_Gray}$(repeat_char "░" "$empty")${C_Reset}"
+    local bar=""
+    if (( filled > 0 )); then
+        bar="${C_Green}$(repeat_char "━" $((filled - 1)))╸${C_Reset}"
+    fi
+    local tail="${C_Gray}$(repeat_char "·" "$empty")${C_Reset}"
+
     printf "\n"
-    printf "%s\n" "  Progress: [${bar}] ${done}/${total} (${percent}%)"
+    printf "%s\n" "  ${C_Bold}Progress:${C_Reset} ${bar}${tail} ${done}/${total} (${percent}%)"
 }
 
 show_execution_view() {
@@ -173,7 +177,14 @@ show_execution_view() {
     local gamma_status="$3"
     local frame="$4"
 
-    clear
+    if [[ "$Rendered" == true ]]; then
+        tput cup 0 0
+        tput ed
+    else
+        clear
+        Rendered=true
+    fi
+
     show_header
     show_execution_grid "$alpha_status" "$beta_status" "$gamma_status" "$frame"
 
@@ -190,7 +201,7 @@ show_execution_view() {
 
     show_progress_bar "$done" 3
     printf "\n"
-    printf "%s\n" "  ${C_Dim}Execution: PARALLEL${C_Reset}"
+    printf "%s\n" "  ${C_Dim}Execution: Parallel${C_Reset}"
 }
 
 if [[ "$Mode" == "Running" ]]; then
@@ -223,6 +234,6 @@ if [[ "$Mode" == "Running" ]]; then
 
     show_execution_view "DONE" "DONE" "DONE" 0
     printf "\n"
-    printf "%s\n" "  ${C_Green}${C_Bold}EXECUTION COMPLETE${C_Reset}"
+    printf "%s\n" "  ${C_Green}${C_Bold}Execution Complete${C_Reset}"
     printf "\n"
 fi
