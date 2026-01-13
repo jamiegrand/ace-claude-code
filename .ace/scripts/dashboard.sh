@@ -66,7 +66,7 @@ draw_progress_bar() {
         bar="${C_Green}$(repeat_char "━" $((filled - 1)))╸${C_Reset}"
     fi
     local tail="${C_Gray}$(repeat_char "·" "$empty")${C_Reset}"
-    printf "%s%s %s%%" "$bar" "$tail" "$percent"
+    printf "[%s%s] %s%%" "$bar" "$tail" "$percent"
 }
 
 status_dot() {
@@ -74,7 +74,7 @@ status_dot() {
     local dot_color="$C_Gray"
 
     if [[ "$status" =~ (In[[:space:]]Progress|Running|Working) ]]; then
-        dot_color="$C_Yellow"
+        dot_color="$C_Green"
     elif [[ "$status" =~ (Complete|Done|Success) ]]; then
         dot_color="$C_Green"
     elif [[ "$status" =~ (Error|Failed) ]]; then
@@ -143,7 +143,7 @@ show_dashboard() {
     clear
 
     printf "\n"
-    printf "%s\n" "  ${C_Purple}${C_Bold}CLAUDRON${C_Reset} ${C_Dim}Dashboard${C_Reset}"
+    printf "%s\n" "  ${C_Purple}${C_Bold}PROJECT STATUS${C_Reset}"
     printf "\n"
 
     local state_info
@@ -153,7 +153,7 @@ show_dashboard() {
         local plan_name
         plan_name=$(get_plan_name)
 
-        printf "%s\n" "  ${C_Bold}${C_Pink}PHASE ${phase_current}/${phase_total}${C_Reset} ${C_Dim}•${C_Reset} ${C_Bold}PLAN:${C_Reset} ${C_White}${plan_name}${C_Reset}"
+        printf "%s\n" "  ${C_Bold}Phase ${phase_current}/${phase_total} • Plan: ${plan_name}${C_Reset}"
         printf "\n"
         printf "%s\n" "  ${C_Bold}Status:${C_Reset} $(status_dot "$status") ${C_White}${status}${C_Reset}"
         printf "%s\n" "  ${C_Bold}Activity:${C_Reset} ${C_Gray}${last_activity}${C_Reset}"
